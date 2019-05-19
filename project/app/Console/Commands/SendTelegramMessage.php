@@ -30,7 +30,7 @@ class SendTelegramMessage extends Command
     public function handle()
     {
         $telegramUsers = TelegramUser::all();
-        $telegram = new Api('783786699:AAG2OFPnMbaoRcWqsHfSM3wrVRdIk7sxfmY');
+        $telegram = new Api(env('TELEGRAM_API_KEY'));
 
         $message = $this->argument('message');
         if (strpos($message, 'test:') !== FALSE) {

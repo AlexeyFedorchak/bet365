@@ -29,7 +29,7 @@ class AddTelegramUsers extends Command
      */
     public function handle()
     {
-        $telegram = new Api('783786699:AAG2OFPnMbaoRcWqsHfSM3wrVRdIk7sxfmY');
+        $telegram = new Api(env('TELEGRAM_API_KEY'));
         $response = $telegram->getUpdates();
         
         foreach ($response as $item) {
