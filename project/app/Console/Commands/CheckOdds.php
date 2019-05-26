@@ -69,6 +69,9 @@ class CheckOdds extends Command
             $oddsHistory = [];
             foreach ($notCheckedOdds as $key => $odd) {
 
+                if ($odd->add_time >= $event->time) continue;
+                if ($odd->odd_market == '18_1') $isSentMessage = false;
+
                 $oddsHistory[] = $odd;
                 if ($key > 0) $lastCheckedOdd = $oddsHistory[$key-1];
 
@@ -77,9 +80,26 @@ class CheckOdds extends Command
                 $handicap = (float) $odd->handicap - ((float) ($lastCheckedOdd->handicap ?? 0));
 
                 $sustainableDiffs = [];
-                if ($homeOd > $this->filter) $sustainableDiffs['home_od'] = $homeOd;
-                if ($awayOd > $this->filter) $sustainableDiffs['away_od'] = $awayOd;
-                if ($handicap > $this->filter) $sustainableDiffs['handicap'] = $handicap;
+                if ($homeOd > $this->filter) $sustainableDiffs['home_od'] 
+                    = [
+                        $homeOd,
+                        $odd->home_od,
+                        $lastCheckedOdd->home_od ?? 0
+                    ];
+
+                if ($awayOd > $this->filter) $sustainableDiffs['away_od'] 
+                    = [
+                        $awayOd,
+                        $odd->away_od,
+                        $lastCheckedOdd->away_od ?? 0,
+                    ];
+
+                if ($handicap > $this->filter) $sustainableDiffs['handicap'] 
+                    = [
+                        $handicap,
+                        $odd->handicap,
+                        $lastCheckedOdd->handicap ?? 0,
+                    ];
 
                 if (count($sustainableDiffs) > 0 && $isSentMessage) {
                     foreach ($sustainableDiffs as $key => $diff) {
@@ -99,7 +119,7 @@ class CheckOdds extends Command
 
                             $messageForDB = 
                               '<i>' . $color . '</i>' . "\r\n"
-                            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $key . ' (' . $marketOdd . ')</b> has been changed in <b>' . $diff . '</b> points (<a href="' . $link . '">Link to the event</a>)
+                            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $key . ' (' . $marketOdd . ')</b> has been changed in <b>' . $diff . '</b> points. Range: from  (<a href="' . $link . '">Link to the event</a>)
                             ';
 
                             $notification = Notification::create([
