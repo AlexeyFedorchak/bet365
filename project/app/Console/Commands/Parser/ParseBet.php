@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\Parser;
 
 use Illuminate\Console\Command;
 use Goutte\Client;
@@ -13,14 +13,14 @@ class ParseBet extends Command
      *
      * @var string
      */
-    protected $signature = 'parse-leagues {page}';
+    protected $signature = 'get:leagues {page}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Get all leagues';
 
     /**
      * Common link for league parsing

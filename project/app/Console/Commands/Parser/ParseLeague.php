@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\Parser;
 
 use Illuminate\Console\Command;
 use Goutte\Client;
@@ -15,7 +15,7 @@ class ParseLeague extends Command
      *
      * @var string
      */
-    protected $signature = 'get-league-matches {leagueId}';
+    protected $signature = 'get:matches {leagueId}';
 
     /**
      * The console command description.
@@ -59,7 +59,7 @@ class ParseLeague extends Command
 
 
             $matchName = trim(str_replace("\n", '', $children->item(4)->textContent));
-            
+
             if ($matchStatus === 'View') {
                 $slug = explode('/', $fullUrl)[3] ?? '';
 

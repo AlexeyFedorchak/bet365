@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\Parser;
 
 use Illuminate\Console\Command;
 use Symfony\Component\Process\Process;
 use App\SyncKey;
 
-class DispatchMatches extends Command
+class DispatchLeagues extends Command
 {
     /**
      * The name and signature of the console command.
@@ -34,7 +34,7 @@ class DispatchMatches extends Command
 
         //150 - is limitation of comp | on server it has to be set on 1000...
         for($i = 0; $i < 150; $i++) {
-            $process = new Process('php artisan parse-leagues ' . $i); 
+            $process = new Process('php artisan get:leagues ' . $i); 
             $process->start();
             $this->info('Dispatched command with page: ' . $i);
         }

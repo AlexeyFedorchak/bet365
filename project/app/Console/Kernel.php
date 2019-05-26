@@ -13,14 +13,17 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        Commands\ParseBet::class,
-        Commands\DispatchLeagues::class,
-        Commands\DispatchMatches::class,
-        Commands\ParseLeague::class,
-        Commands\DispatchLeagues::class,
-        Commands\SendTelegramMessage::class,
-        Commands\AddTelegramUsers::class,
-        Commands\GetCsv::class,
+        Commands\Parser\ParseBet::class,
+        Commands\Parser\DispatchMatches::class,
+        Commands\Parser\ParseLeague::class,
+        Commands\Parser\DispatchLeagues::class,
+        Commands\Telegram\SendTelegramMessage::class,
+        Commands\Telegram\AddTelegramUsers::class,
+        Commands\Parser\GetCsv::class,
+        Commands\Parser\ParseMatch::class,
+        Commands\GetEvents::class,
+        Commands\GetOdds::class,
+        Commands\CheckOdds::class,
     ];
 
     /**
@@ -31,8 +34,14 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')
-        //          ->hourly();
+        $schedule->command('get:events')
+                 ->daily();
+
+        $schedule->command('get:odds')
+                 ->everyMinute();
+
+        $schedule->command('check:odds')
+                 ->everyMinute();
     }
 
     /**
