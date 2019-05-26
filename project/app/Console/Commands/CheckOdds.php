@@ -49,7 +49,7 @@ class CheckOdds extends Command
             $startTime = Carbon::parse(date('Y-m-d h:i:s', $event->time));
             $diffInHours = $startTime->diffInHours($now);
 
-            if ($diffInHours > 12) continue;
+            // if ($diffInHours > 12) continue;
 
             $this->info('Processing event: ' . $event->event_id);
 
@@ -64,13 +64,13 @@ class CheckOdds extends Command
                 ->get();
 
             $isSentMessage = true;
-            if (is_null($lastCheckedOdd)) $isSentMessage = false;
+            // if (is_null($lastCheckedOdd)) $isSentMessage = false;
 
             $oddsHistory = [];
             foreach ($notCheckedOdds as $key => $odd) {
 
-                if ($odd->add_time >= $event->time) continue;
-                if ($odd->odd_market == '18_1') $isSentMessage = false;
+                // if ($odd->add_time >= $event->time) continue;
+                // if ($odd->odd_market == '18_1') $isSentMessage = false;
 
                 $oddsHistory[] = $odd;
                 if ($key > 0) $lastCheckedOdd = $oddsHistory[$key-1];
@@ -119,7 +119,7 @@ class CheckOdds extends Command
 
                             $messageForDB = 
                               '<i>' . $color . '</i>' . "\r\n"
-                            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $key . ' (' . $marketOdd . ')</b> has been changed in <b>' . $diff . '</b> points. Range: from  (<a href="' . $link . '">Link to the event</a>)
+                            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $key . ' (' . $marketOdd . ')</b> has been changed in <b>' . $diff[0] . '</b> points. Range: from ' . $diff[2] . ' to ' . $diff[1] . '. (<a href="' . $link . '">Link to the event</a>)
                             ';
 
                             $notification = Notification::create([
