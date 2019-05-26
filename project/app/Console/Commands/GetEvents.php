@@ -31,6 +31,7 @@ class GetEvents extends Command
      */
     public function handle()
     {
+        \Log::info('running get:events - ' . Carbon::now());
         $client = new Client();
         $token = env('BETS_TOKEN');
         $sportId = env('SPORT_ID');
@@ -73,5 +74,7 @@ class GetEvents extends Command
                 $this->info(' Event ' . $event['id'] . ' saved (day: ' . $day . ')!');
             }            
         }
+
+        \Log::info('get:events is finished - ' . Carbon::now());
     }
 }

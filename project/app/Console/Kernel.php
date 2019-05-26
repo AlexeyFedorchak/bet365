@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Carbon\Carbon;
 
 class Kernel extends ConsoleKernel
 {
@@ -24,6 +25,7 @@ class Kernel extends ConsoleKernel
         Commands\GetEvents::class,
         Commands\GetOdds::class,
         Commands\CheckOdds::class,
+        Commands\TestCronLogs::class,
     ];
 
     /**
@@ -34,6 +36,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        \Log::info('running scheduler - ' . Carbon::now());
+
         $schedule->command('get:events')
                  ->daily();
 
@@ -42,6 +46,8 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('check:odds')
                  ->everyMinute();
+
+        \Log::info('finish scheduler - ' . Carbon::now());
     }
 
     /**

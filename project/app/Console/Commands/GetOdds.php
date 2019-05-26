@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use App\UpcomingEvents;
 use App\Odd;
 use App\SyncKey;
+use Carbon\Carbon;
 
 class GetOdds extends Command
 {
@@ -31,6 +32,7 @@ class GetOdds extends Command
      */
     public function handle()
     {
+        \Log::info('running get:odds - ' . Carbon::now());
         $client = new Client();
         $token = env('BETS_TOKEN');
         $sportId = env('SPORT_ID');
@@ -73,5 +75,6 @@ class GetOdds extends Command
                 }                
             }
         }
+        \Log::info('get:odds is finished - ' . Carbon::now());
     }
 }

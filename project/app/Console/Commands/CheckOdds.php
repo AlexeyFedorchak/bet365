@@ -40,6 +40,7 @@ class CheckOdds extends Command
     public function handle()
     {
         //$sync = SyncKey::all()->last();
+        \Log::info('running check:odds - ' . Carbon::now());
         $events = UpcomingEvents::all();
 
         foreach ($events as $event) {
@@ -122,5 +123,7 @@ class CheckOdds extends Command
                 $this->info('Odd is checked');
             }
         }
+
+        \Log::info('check:odds if finished - ' . Carbon::now());
     }
 }
