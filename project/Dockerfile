@@ -13,6 +13,4 @@ RUN apt-get install -y \
   && docker-php-ext-configure zip --with-libzip \
   && docker-php-ext-install zip
 
-RUN chmod +x ./cron.sh
-
 EXPOSE 80

@@ -1,5 +1,5 @@
 while [ true ]
 do
-	php artisan schedule:run --verbose --no-interaction &
+	sudo docker exec -it 147a72140ea6 php /var/www/html/artisan schedule:run
 	sleep 60
 done

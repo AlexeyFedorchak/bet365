@@ -72,6 +72,7 @@ class CheckOdds extends Command
 
                 $notCheckedOdds = Odd::where('event_id', $event->event_id)
                     ->where('is_checked', 0)
+                    ->where('id', '>', ((int)($lastCheckedOdd->id ?? null)))
                     ->where('odd_market', $oddMarket)
                     ->orderBy('id', 'ASC')
                     ->get();
@@ -79,15 +80,15 @@ class CheckOdds extends Command
                 $isSentMessage = true;
                 if (is_null($lastCheckedOdd)) $isSentMessage = false;
 
-                $oddsHistory = [];
                 foreach ($notCheckedOdds as $key => $odd) {
 
                     if ($odd->add_time >= $event->time) continue;
 
-                    $oddsHistory[] = $odd;
-                    if ($key > 0) $lastCheckedOdd = $oddsHistory[$key-1];
-
-                    $handicap = (float) $odd->handicap - ((float) ($lastCheckedOdd->handicap ?? 0));
+                    if (isset($odd[$key-1])) {
+                        $handicap = (float) $odd->handicap - ((float) ($odd[$key-1]->handicap ?? 0));
+                    } else {
+                        $handicap = (float) $odd->handicap - ((float) ($lastCheckedOdd->handicap ?? 0));
+                    }
 
                     $sustainableDiffs = [];
 
@@ -101,7 +102,7 @@ class CheckOdds extends Command
 
                     if (count($sustainableDiffs) > 0 && $isSentMessage) {
                         foreach ($sustainableDiffs as $key => $diff) {
-                            $isNotificationsSent = Notification::where('odd_type', $key)->where('event_id', $event->event_id)->exists();
+                            $isNotificationsSent = Notification::where('odd_type', $oddMarket)->where('event_id', $event->event_id)->exists();
 
                                 $color = 'GREEN';
                                 if ($isNotificationsSent) $color = 'RED';
@@ -124,7 +125,7 @@ class CheckOdds extends Command
                                     'event_id' => $event->event_id,
                                     'odd_id' => $odd->odd_id,
                                     'chat_ids' => '',
-                                    'odd_type' => $key,
+                                    'odd_type' => $oddMarket,
                                     'message' => $messageForDB,
                                     'is_done' => 0,
                                 ]);
