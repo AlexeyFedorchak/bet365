@@ -27,6 +27,7 @@ class Kernel extends ConsoleKernel
         Commands\CheckOdds::class,
         Commands\TestCronLogs::class,
         Commands\Truncate::class,
+        Commands\TestTelegram::class,
     ];
 
     /**
