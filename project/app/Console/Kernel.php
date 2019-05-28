@@ -44,10 +44,10 @@ class Kernel extends ConsoleKernel
                  ->daily();
 
         $schedule->command('get:odds')
-                 ->everyTenMinutes();
+                 ->everyMinute();
 
         $schedule->command('check:odds')
-                 ->everyTenMinutes();
+                 ->everyMinute();
 
         \Log::info('finish scheduler - ' . Carbon::now());
     }
