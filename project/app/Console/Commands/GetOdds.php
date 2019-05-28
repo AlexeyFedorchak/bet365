@@ -64,6 +64,8 @@ class GetOdds extends Command
 
                     foreach ($oddMarket as $odd) {
 
+                        $isOddExists = Odd::where('odd_id', $odd['id'])->exists();
+
                         if (!$isOddExists) {
                             Odd::create([
                                 'odd_id' => $odd['id'],
