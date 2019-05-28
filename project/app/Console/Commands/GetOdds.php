@@ -25,6 +25,15 @@ class GetOdds extends Command
      */
     protected $description = 'Get spread values for upcoming events';
 
+    protected $oddMarkets = [
+        '18_2',
+        '18_3',
+        '18_5',
+        '18_6',
+        '18_8',
+        '18_9',
+    ];
+
     /**
      * Execute the console command.
      *
@@ -50,10 +59,10 @@ class GetOdds extends Command
 
             if (isset($odds['results']['odds'])) {
                 foreach ($odds['results']['odds'] as $key => $oddMarket) {
-                    foreach ($oddMarket as $odd) {
 
-                        $isOddExists = Odd::where('odd_id', $odd['id'])->exists();
-                        //$this->info('Processing odd: ' . $odd['id'] . '. Status: ' . (string) $isOddExists);
+                    if (!in_array($key, $this->oddMarkets)) continue;
+
+                    foreach ($oddMarket as $odd) {
 
                         if (!$isOddExists) {
                             Odd::create([

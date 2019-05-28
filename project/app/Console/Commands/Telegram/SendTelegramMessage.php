@@ -74,5 +74,6 @@ class SendTelegramMessage extends Command
         $notification->save();
 
         $this->info('Notifications successfully updated!');
+        \Log::info('Message sent - ' . Carbon::now());
     }
 }

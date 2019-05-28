@@ -31,6 +31,15 @@ class CheckOdds extends Command
 
     protected $baseLink = 'https://betsapi.com/rs/bet365/';
 
+    protected $oddsMarkets = [
+        '18_2',
+        '18_3',
+        '18_5',
+        '18_6',
+        '18_8',
+        '18_9',
+    ];
+
     /**
      * Execute the console command.
      * @TODO Rewrite this! Make it more complex and easier   
@@ -49,98 +58,89 @@ class CheckOdds extends Command
             $startTime = Carbon::parse(date('Y-m-d h:i:s', $event->time));
             $diffInHours = $startTime->diffInHours($now);
 
-            // if ($diffInHours > 12) continue;
+            if ($diffInHours > 12) continue;
 
             $this->info('Processing event: ' . $event->event_id);
 
-            $lastCheckedOdd = Odd::where('event_id', $event->event_id)
-                ->where('is_checked', 1)
-                ->orderBy('id', 'DESC')
-                ->first();
+            foreach ($this->oddsMarkets as $oddMarket) {
 
-            $notCheckedOdds = Odd::where('event_id', $event->event_id)
-                ->where('is_checked', 0)
-                ->orderBy('id', 'ASC')
-                ->get();
+                $lastCheckedOdd = Odd::where('event_id', $event->event_id)
+                    ->where('is_checked', 1)
+                    ->where('odd_market', $oddMarket)
+                    ->orderBy('id', 'DESC')
+                    ->first();
 
-            $isSentMessage = true;
-            // if (is_null($lastCheckedOdd)) $isSentMessage = false;
+                $notCheckedOdds = Odd::where('event_id', $event->event_id)
+                    ->where('is_checked', 0)
+                    ->where('odd_market', $oddMarket)
+                    ->orderBy('id', 'ASC')
+                    ->get();
 
-            $oddsHistory = [];
-            foreach ($notCheckedOdds as $key => $odd) {
+                $isSentMessage = true;
+                if (is_null($lastCheckedOdd)) $isSentMessage = false;
 
-                // if ($odd->add_time >= $event->time) continue;
-                // if ($odd->odd_market == '18_1') $isSentMessage = false;
+                $oddsHistory = [];
+                foreach ($notCheckedOdds as $key => $odd) {
 
-                $oddsHistory[] = $odd;
-                if ($key > 0) $lastCheckedOdd = $oddsHistory[$key-1];
+                    if ($odd->add_time >= $event->time) continue;
 
-                $homeOd = (float) $odd->home_od - ((float) ($lastCheckedOdd->home_od ?? 0));
-                $awayOd = (float) $odd->away_od - ((float) ($lastCheckedOdd->away_od ?? 0));
-                $handicap = (float) $odd->handicap - ((float) ($lastCheckedOdd->handicap ?? 0));
+                    $oddsHistory[] = $odd;
+                    if ($key > 0) $lastCheckedOdd = $oddsHistory[$key-1];
 
-                $sustainableDiffs = [];
-                if ($homeOd > $this->filter) $sustainableDiffs['home_od'] 
-                    = [
-                        $homeOd,
-                        $odd->home_od,
-                        $lastCheckedOdd->home_od ?? 0
-                    ];
+                    $handicap = (float) $odd->handicap - ((float) ($lastCheckedOdd->handicap ?? 0));
 
-                if ($awayOd > $this->filter) $sustainableDiffs['away_od'] 
-                    = [
-                        $awayOd,
-                        $odd->away_od,
-                        $lastCheckedOdd->away_od ?? 0,
-                    ];
+                    $sustainableDiffs = [];
 
-                if ($handicap > $this->filter) $sustainableDiffs['handicap'] 
-                    = [
-                        $handicap,
-                        $odd->handicap,
-                        $lastCheckedOdd->handicap ?? 0,
-                    ];
-
-                if (count($sustainableDiffs) > 0 && $isSentMessage) {
-                    foreach ($sustainableDiffs as $key => $diff) {
-                        $isNotificationsSent = Notification::where('odd_type', $key)->where('event_id', $event->event_id)->exists();
-
-                            $color = 'GREEN';
-                            if ($isNotificationsSent) $color = 'RED';
-                            
-                            $link = $this->baseLink 
-                                . $event->event_id 
-                                . '/' 
-                                . str_replace(' ', '-', $event->home_team_name)
-                                . '-v-'
-                                . str_replace(' ', '-', $event->away_team_name);
-
-                            $marketOdd = MarketsOddConverter::convert($odd->odd_market);
-
-                            $messageForDB = 
-                              '<i>' . $color . '</i>' . "\r\n"
-                            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $key . ' (' . $marketOdd . ')</b> has been changed in <b>' . $diff[0] . '</b> points. Range: from ' . $diff[2] . ' to ' . $diff[1] . '. (<a href="' . $link . '">Link to the event</a>)
-                            ';
-
-                            $notification = Notification::create([
-                                'event_id' => $event->event_id,
-                                'odd_id' => $odd->odd_id,
-                                'chat_ids' => '',
-                                'odd_type' => $key,
-                                'message' => $messageForDB,
-                                'is_done' => 0,
-                            ]);
-
-                            $this->info('Found sustainable changes. Sending notification to users.');
-
-                            $process = new Process('php artisan telegram:send ' . $notification->id); 
-                            $process->start();
+                    if ($handicap > $this->filter) {
+                        $sustainableDiffs['handicap'] = [
+                            $handicap,
+                            $odd->handicap,
+                            $lastCheckedOdd->handicap ?? 0,
+                        ];
                     }
-                }
 
-                $odd->is_checked = 1;
-                $odd->save();
-                $this->info('Odd is checked');
+                    if (count($sustainableDiffs) > 0 && $isSentMessage) {
+                        foreach ($sustainableDiffs as $key => $diff) {
+                            $isNotificationsSent = Notification::where('odd_type', $key)->where('event_id', $event->event_id)->exists();
+
+                                $color = 'GREEN';
+                                if ($isNotificationsSent) $color = 'RED';
+                                
+                                $link = $this->baseLink 
+                                    . $event->event_id 
+                                    . '/' 
+                                    . str_replace(' ', '-', $event->home_team_name)
+                                    . '-v-'
+                                    . str_replace(' ', '-', $event->away_team_name);
+
+                                $marketOdd = MarketsOddConverter::convert($odd->odd_market);
+
+                                $messageForDB = 
+                                  '<i>' . $color . '</i>' . "\r\n"
+                                . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $diff[0] . '</b> points. Range: from ' . $diff[2] . ' to ' . $diff[1] . '. (<a href="' . $link . '">Link to the event</a>)
+                                ';
+
+                                $notification = Notification::create([
+                                    'event_id' => $event->event_id,
+                                    'odd_id' => $odd->odd_id,
+                                    'chat_ids' => '',
+                                    'odd_type' => $key,
+                                    'message' => $messageForDB,
+                                    'is_done' => 0,
+                                ]);
+
+                                $this->info('Found sustainable changes. Sending notification to users.');
+                                \Log::info('sending message - ' . Carbon::now());
+
+                                $process = new Process('php artisan telegram:send ' . $notification->id); 
+                                $process->start();
+                        }
+                    }
+
+                    $odd->is_checked = 1;
+                    $odd->save();
+                    $this->info('Odd is checked');
+                }
             }
         }
 
