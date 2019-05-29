@@ -72,7 +72,6 @@ class CheckOdds extends Command
 
                 $notCheckedOdds = Odd::where('event_id', $event->event_id)
                     ->where('is_checked', 0)
-                    ->where('id', '>', ((int)($lastCheckedOdd->id ?? null)))
                     ->where('odd_market', $oddMarket)
                     ->orderBy('id', 'ASC')
                     ->get();
@@ -102,7 +101,10 @@ class CheckOdds extends Command
 
                     if (count($sustainableDiffs) > 0 && $isSentMessage) {
                         foreach ($sustainableDiffs as $key => $diff) {
-                            $isNotificationsSent = Notification::where('odd_type', $oddMarket)->where('event_id', $event->event_id)->exists();
+                            $isNotificationsSent = Notification::where('odd_type', $oddMarket)
+                                ->where('event_id', $event->event_id)
+                                ->where('is_done', 1)
+                                ->exists();
 
                                 $color = 'GREEN';
                                 if ($isNotificationsSent) $color = 'RED';
@@ -118,7 +120,7 @@ class CheckOdds extends Command
 
                                 $messageForDB = 
                                   '<i>' . $color . '</i>' . "\r\n"
-                                . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $diff[0] . '</b> points. Range: from ' . $diff[2] . ' to ' . $diff[1] . '. (<a href="' . $link . '">Link to the event</a>)
+                                . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $diff[0] . '</b> points. Range: from ' . $diff[2] . ' to ' . $diff[1] . '. ' . $event->home_team_name . ' vs ' . $event->away_team_name . ' - ' . Carbon::createFromTimestamp($event->time) . '. (<a href="' . $link . '">Link to the event</a>)
                                 ';
 
                                 $notification = Notification::create([

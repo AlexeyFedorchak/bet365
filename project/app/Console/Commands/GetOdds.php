@@ -86,6 +86,8 @@ class GetOdds extends Command
                 }                
             }
         }
+
+        \Artisan::call('check:odds');
         \Log::info('get:odds is finished - ' . Carbon::now());
     }
 }

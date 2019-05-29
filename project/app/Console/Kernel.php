@@ -46,8 +46,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:odds')
                  ->everyMinute();
 
-        $schedule->command('check:odds')
-                 ->everyMinute();
+        // $schedule->command('check:odds')
+        //          ->everyMinute();
 
         \Log::info('finish scheduler - ' . Carbon::now());
     }
