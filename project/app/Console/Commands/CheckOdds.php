@@ -103,7 +103,6 @@ class CheckOdds extends Command
                         foreach ($sustainableDiffs as $key => $diff) {
                             $isNotificationsSent = Notification::where('odd_type', $oddMarket)
                                 ->where('event_id', $event->event_id)
-                                ->where('is_done', 1)
                                 ->exists();
 
                                 $color = 'GREEN';
