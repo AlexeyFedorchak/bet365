@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Odd;
 use App\UpcomingEvents;
 use App\Notification;
+use Carbon\Carbon;
 
 class Truncate extends Command
 {

@@ -85,8 +85,10 @@ class CheckOdds extends Command
 
                     if (isset($notCheckedOdds[$key-1])) {
                         $handicap = (float) $odd->handicap - ((float) ($notCheckedOdds[$key-1]->handicap ?? 0));
+                        $from = (float) ($notCheckedOdds[$key-1]->handicap ?? 0);
                     } else {
                         $handicap = (float) $odd->handicap - ((float) ($lastCheckedOdd->handicap ?? 0));
+                        $from = (float) ($lastCheckedOdd->handicap ?? 0);
                     }
 
                     $sustainableDiffs = [];
@@ -95,7 +97,7 @@ class CheckOdds extends Command
                         $sustainableDiffs['handicap'] = [
                             $handicap,
                             $odd->handicap,
-                            $lastCheckedOdd->handicap ?? 0,
+                            $from,
                         ];
                     }
 
@@ -119,7 +121,7 @@ class CheckOdds extends Command
 
                                 $messageForDB = 
                                   '<i>' . $color . '</i>' . "\r\n"
-                                . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $diff[0] . '</b> points. Range: from ' . $diff[2] . ' to ' . $diff[1] . '. ' . $event->home_team_name . ' vs ' . $event->away_team_name . ' - ' . Carbon::createFromTimestamp($event->time) . '. (<a href="' . $link . '">Link to the event</a>)
+                                . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $diff[0] . '</b> points. Range: from ' . $diff[2] . ' to ' . $diff[1] . '. ' . $event->home_team_name . ' vs ' . $event->away_team_name . ' - ' . Carbon::createFromTimestampUTC($event->time) . '. (<a href="' . $link . '">Link to the event</a>)
                                 ';
 
                                 $notification = Notification::create([
