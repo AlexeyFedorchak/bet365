@@ -83,8 +83,8 @@ class CheckOdds extends Command
 
                     if ($odd->add_time >= $event->time) continue;
 
-                    if (isset($odd[$key-1])) {
-                        $handicap = (float) $odd->handicap - ((float) ($odd[$key-1]->handicap ?? 0));
+                    if (isset($notCheckedOdds[$key-1])) {
+                        $handicap = (float) $odd->handicap - ((float) ($notCheckedOdds[$key-1]->handicap ?? 0));
                     } else {
                         $handicap = (float) $odd->handicap - ((float) ($lastCheckedOdd->handicap ?? 0));
                     }
