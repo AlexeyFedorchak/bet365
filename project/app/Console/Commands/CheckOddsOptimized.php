@@ -98,13 +98,14 @@ class CheckOddsOptimized extends Command
                                     return $item->odd_market == $key && $item->event_id == $eventId;
                                 });
 
-                            $checkedOddMarkets = $checkedButNotSaved->pluck('odd_market')->toArray();
-                            $checkedEvents = $checkedButNotSaved->pluck('event_id')->toArray();
+                            $oddNotSavedChecked = $checkedButNotSaved
+                                ->filter(function ($item) use ($key, $event) {
+                                    return $item['odd_market'] == $key && $item['event_id'] == $event->event_id;
+                                });
 
                             $isRed = false;
-                            if ((in_array($key, $checkedOddMarkets) === true 
-                                && in_array($event->event_id, $checkedEvents) === true)
-                                || ($checkedOddsFiltered->count() > 0)) {
+                            if (($oddNotSavedChecked->count() > 1)
+                                || ($checkedOddsFiltered->count() > 1)) {
                                 $isRed = true;
                             }
 
