@@ -59,6 +59,7 @@ class CheckOddsOptimized extends Command
 
         $now = Carbon::now();
 
+        $data = [];
         foreach ($events as $event) {
             $startTime = Carbon::parse(date('Y-m-d h:i:s', $event->time));
             $diffInHours = $startTime->diffInHours($now);
@@ -86,11 +87,11 @@ class CheckOddsOptimized extends Command
             . '-v-'
             . str_replace(' ', '-', $event->away_team_name);
 
-                    dd(
-                        Carbon::createFromTimestampUTC($odd['add_time']), 
-                        Carbon::createFromTimestampUTC($event->time),
-                        $link
-                    );
+                    $data[] = [
+                        Carbon::createFromTimestampUTC($odd['add_time'])->format('Y-m-d d:i:s'), 
+                        Carbon::createFromTimestampUTC($event->time)->format('Y-m-d d:i:s'),
+                        $link                        
+                    ];
 
                     if (in_array($odd['id'], $checkedOddsId)) continue;
 
@@ -107,7 +108,7 @@ class CheckOddsOptimized extends Command
                                     return $item->odd_market == $key && $item->event_id == $eventId;
                                 });
 
-                            $this->sendMessage(($checkedOddsFiltered->count() > 0), $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram);
+                            // $this->sendMessage(($checkedOddsFiltered->count() > 0), $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram);
                         }                        
                     }
 
@@ -121,6 +122,7 @@ class CheckOddsOptimized extends Command
                 }
             }
         }
+        dd($data);
 
         \Log::info('Finished check:odds:optimized - ' . Carbon::now());
     }
