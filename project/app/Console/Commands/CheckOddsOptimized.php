@@ -59,6 +59,7 @@ class CheckOddsOptimized extends Command
 
         $now = Carbon::now();
 
+        $checkedButNotSaved = collect();
         foreach ($events as $event) {
             $startTime = Carbon::parse(date('Y-m-d h:i:s', $event->time));
             $diffInHours = $startTime->diffInHours($now);
@@ -85,8 +86,8 @@ class CheckOddsOptimized extends Command
                     if ($addOddTime >= $startEventTime) continue;
 
                     if ($oddKey > 0) {
-                        $to = (float) $odd['handicap'];
-                        $from = (float) ($oddMarket[$oddKey - 1]['handicap']);
+                        $to = (float) ($odd['handicap'] ?? 0);
+                        $from = (float) ($oddMarket[$oddKey - 1]['handicap'] ?? 0);
 
                         $handicapDiff = abs($to - $from);
 
@@ -97,7 +98,22 @@ class CheckOddsOptimized extends Command
                                     return $item->odd_market == $key && $item->event_id == $eventId;
                                 });
 
-                            $this->sendMessage(($checkedOddsFiltered->count() > 0), $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram);
+                            $checkedOddMarkets = $checkedButNotSaved->pluck('odd_market')->toArray();
+                            $checkedEvents = $checkedButNotSaved->pluck('event_id')->toArray();
+
+                            $isRed = false;
+                            if ((in_array($key, $checkedOddMarkets) === true 
+                                && in_array($event->event_id, $checkedEvents) === true)
+                                || ($checkedOddsFiltered->count() > 0)) {
+                                $isRed = true;
+                            }
+
+                            $checkedButNotSaved->push([
+                                'odd_market' => $key,
+                                'event_id' => $event->event_id
+                            ]);
+
+                            $this->sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram);
                         }                        
                     }
 
