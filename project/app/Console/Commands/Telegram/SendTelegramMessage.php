@@ -42,7 +42,7 @@ class SendTelegramMessage extends Command
             $EmojiUtf8Byte = '\xF0\x9F\x94\xB4';
             $isRed = true;    
         } else{
-            $EmojiUtf8Byte = '\xF0\x9F\x94\xB5';    
+            $EmojiUtf8Byte = '\xF0\x9F\x94\xB5';
         }
         
         $pattern = '@\\\x([0-9a-fA-F]{2})@x';

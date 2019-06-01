@@ -7,6 +7,7 @@ use App\Odd;
 use App\UpcomingEvents;
 use App\Notification;
 use Carbon\Carbon;
+use App\CheckedOdds;
 
 class Truncate extends Command
 {
@@ -34,6 +35,7 @@ class Truncate extends Command
         Odd::truncate();
         UpcomingEvents::truncate();
         Notification::truncate();
+        CheckedOdds::truncate();
 
         $this->info('Done');
     }
