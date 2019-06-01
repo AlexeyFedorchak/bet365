@@ -85,7 +85,7 @@ class CheckOddsOptimized extends Command
                         $to = (float) $odd['handicap'];
                         $from = (float) ($oddMarket[$oddKey - 1]['handicap']);
 
-                        $handicapDiff = $to - $from;
+                        $handicapDiff = abs($to - $from);
 
                         if ($handicapDiff >= 2) {
                             $eventId = $event->event_id;
