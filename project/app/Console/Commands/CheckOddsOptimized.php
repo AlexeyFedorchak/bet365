@@ -78,8 +78,21 @@ class CheckOddsOptimized extends Command
                 if (!in_array($key, $this->oddMarkets)) continue;
 
                 foreach ($oddMarket as $oddKey => $odd) {
+
+        $link = $this->baseLink 
+            . $event->event_id 
+            . '/' 
+            . str_replace(' ', '-', $event->home_team_name)
+            . '-v-'
+            . str_replace(' ', '-', $event->away_team_name);
+
+                    dd(
+                        Carbon::createFromTimestampUTC($odd['add_time']), 
+                        Carbon::createFromTimestampUTC($event->time),
+                        $link
+                    );
+
                     if (in_array($odd['id'], $checkedOddsId)) continue;
-                    if ($odd['add_time'] >= $event->time) continue;
 
                     if ($oddKey > 0) {
                         $to = (float) $odd['handicap'];
@@ -94,10 +107,7 @@ class CheckOddsOptimized extends Command
                                     return $item->odd_market == $key && $item->event_id == $eventId;
                                 });
 
-                            $isRed = false;
-                            if ($checkedOddsFiltered->count() > 0) $idRed = true;
-
-                            $this->sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram);
+                            $this->sendMessage(($checkedOddsFiltered->count() > 0), $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram);
                         }                        
                     }
 
@@ -140,7 +150,7 @@ class CheckOddsOptimized extends Command
 
         $message = 
             '<i>' . $emoji . '</i>' . "\r\n"
-            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $handicapDiff . '</b> points. Range: from ' . $from . ' to ' . $to . '. ' . $event->home_team_name . ' vs ' . $event->away_team_name . ' - ' . Carbon::createFromTimestampUTC($event->time) . '. (<a href="' . $link . '">Link to the event</a>)';
+            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $handicapDiff . '</b> points. Range: from ' . $from . ' to ' . $to . '. ' . $event->home_team_name . ' vs ' . $event->away_team_name . ' - ' . Carbon::createFromTimestampUTC($event->time)->addHours(3) . '. (<a href="' . $link . '">Link to the event</a>)';
 
         foreach ($telegramUsers as $telegramUser) {
             $telegram->sendMessage([
