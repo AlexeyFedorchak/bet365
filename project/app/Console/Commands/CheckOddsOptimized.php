@@ -91,7 +91,7 @@ class CheckOddsOptimized extends Command
                             $eventId = $event->event_id;
                             $checkedOddsFiltered = $checkedOdds
                                 ->filter(function ($item) use ($key, $eventId) {
-                                    return $item->odd_market === $key && $item->event_id === $eventId;
+                                    return $item->odd_market == $key && $item->event_id == $eventId;
                                 });
 
                             $isRed = false;
