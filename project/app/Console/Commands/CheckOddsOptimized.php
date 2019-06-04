@@ -50,6 +50,7 @@ class CheckOddsOptimized extends Command
         \Log::info('Running check:odds:optimized - ' . Carbon::now());
         $client = new Client();
         $token = env('BETS_TOKEN');
+        $sportId = env('SPORT_ID');
         $telegram = new Api(env('TELEGRAM_API_KEY'));
 
         $events = UpcomingEvents::all();
@@ -57,10 +58,21 @@ class CheckOddsOptimized extends Command
         $telegramUsers = TelegramUser::all();
         $checkedOddsId = $checkedOdds->pluck('checked_odds_id')->toArray();
 
+        $inPlayEventsIds = [];
+        try {
+            $response = $client->request('GET', 'https://api.betsapi.com/v2/events/inplay?sport_id=' .  $sportId . '&token=' . $token);
+            $inPlayEvents = json_decode($response->getBody()->getContents(), true)['results'];
+            $inPlayEventsIds = collect($inPlayEvents)->pluck('id')->toArray();
+        } catch (\Exception $e) {
+            $this->info($e->getMessage());
+        }
+
         $now = Carbon::now();
 
         $checkedButNotSaved = collect();
         foreach ($events as $event) {
+            if (in_array($event->event_id, $inPlayEventsIds)) continue;
+
             $startTime = Carbon::parse(date('Y-m-d h:i:s', $event->time));
             $diffInHours = $startTime->diffInHours($now);
 
@@ -104,8 +116,8 @@ class CheckOddsOptimized extends Command
                                 });
 
                             $isRed = false;
-                            if (($oddNotSavedChecked->count() > 1)
-                                || ($checkedOddsFiltered->count() > 1)) {
+                            if (($oddNotSavedChecked->count() >= 1)
+                                || ($checkedOddsFiltered->count() >= 1)) {
                                 $isRed = true;
                             }
 
@@ -157,7 +169,7 @@ class CheckOddsOptimized extends Command
 
         $message = 
             '<i>' . $emoji . '</i>' . "\r\n"
-            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $handicapDiff . '</b> points. Range: from ' . $to . ' to ' . $from . '. ' . $event->home_team_name . ' vs ' . $event->away_team_name . ' - ' . Carbon::createFromTimestampUTC($event->time)->addHours(3) . '. (<a href="' . $link . '">Link to the event</a>)';
+            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $handicapDiff . '</b> points. Range: from ' . $to . ' to ' . $from . '. ' . $event->home_team_name . ' vs ' . $event->away_team_name . ' - ' . Carbon::createFromTimestampUTC($event->time) . ' (UTC). (<a href="' . $link . '">Link to the event</a>)';
 
         foreach ($telegramUsers as $telegramUser) {
             $telegram->sendMessage([
