@@ -53,11 +53,6 @@ class CheckOddsOptimized extends Command
         $sportId = env('SPORT_ID');
         $telegram = new Api(env('TELEGRAM_API_KEY'));
 
-        $events = UpcomingEvents::all();
-        $checkedOdds = CheckedOdds::all();
-        $telegramUsers = TelegramUser::all();
-        $checkedOddsId = $checkedOdds->pluck('checked_odds_id')->toArray();
-
         $inPlayEventsIds = [];
         try {
             $response = $client->request('GET', 'https://api.betsapi.com/v2/events/inplay?sport_id=' .  $sportId . '&token=' . $token);
@@ -67,12 +62,20 @@ class CheckOddsOptimized extends Command
             $this->info($e->getMessage());
         }
 
+        $inPlayEventsIds = array_map(function ($item) { return (int) $item; }, $inPlayEventsIds);
+
+        UpcomingEvents::whereIn('event_id', $inPlayEventsIds)->get();
+        $this->info('Inplay events are removed! Continue...');
+
+        $events = UpcomingEvents::all();
+        $checkedOdds = CheckedOdds::all();
+        $telegramUsers = TelegramUser::all();
+        $checkedOddsId = $checkedOdds->pluck('checked_odds_id')->toArray();
+
         $now = Carbon::now();
 
         $checkedButNotSaved = collect();
         foreach ($events as $event) {
-            if (in_array($event->event_id, $inPlayEventsIds)) continue;
-
             $startTime = Carbon::parse(date('Y-m-d h:i:s', $event->time));
             $diffInHours = $startTime->diffInHours($now);
 
