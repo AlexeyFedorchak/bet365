@@ -47,7 +47,7 @@ class CheckOddsEventsRealTime extends Command
      */
     public function handle()
     {
-        \Log::info('Running check:odds:events:realtime - ' . Carbon::now());
+        \Log::info('START');
         $client = new Client();
         $token = env('BETS_TOKEN');
         $sportId = env('SPORT_ID');
@@ -137,7 +137,7 @@ class CheckOddsEventsRealTime extends Command
             }
         }
 
-        \Log::info('Finished check:odds:optimized - ' . Carbon::now());
+        \Log::info('FINISH');
     }
 
     private function sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram)
