@@ -29,6 +29,7 @@ class Kernel extends ConsoleKernel
         Commands\Truncate::class,
         Commands\TestTelegram::class,
         Commands\CheckOddsOptimized::class,
+        Commands\CheckOddsEventsRealTime::class,
     ];
 
     /**
@@ -39,21 +40,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        \Log::info('running scheduler - ' . Carbon::now());
-
-        $schedule->command('get:events')
-                 ->daily();
-
-        // $schedule->command('check:odds')
-        //          ->everyFiveMinutes();
-
-        // $schedule->command('get:odds')
-        //          ->everyFifteenMinutes();
-
-        $schedule->command('check:odds:optimized')
+        $schedule->command('check:odds:events:realtime')
                  ->everyMinute();
-
-        \Log::info('finish scheduler - ' . Carbon::now());
     }
 
     /**
