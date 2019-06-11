@@ -69,13 +69,8 @@ class CheckOddsEventsRealTime extends Command
 
         $checkedButNotSaved = collect();
         foreach ($events as $event) {
-            $startTime = Carbon::parse(date('Y-m-d h:i:s', $event['time']));
-            $diffInHours = $startTime->diffInHours($now);
-
-            if ($diffInHours > 12) continue;
-
             try {
-                $response = $client->request('GET', 'https://api.betsapi.com/v2/event/odds?token=' . $token . '&event_id=' . $event['id']);
+                $response = $client->request('GET', 'https://api.betsapi.com/v2/event/odds?token=' . $token . '&event_id=' . $event['id'] . '&day=' . $now->format('YYYYMMDD'));
 
                 $odds = json_decode($response->getBody()->getContents(), true)['results']['odds'] ?? [];
             } catch(\Exception $e) {
@@ -88,10 +83,6 @@ class CheckOddsEventsRealTime extends Command
 
                 foreach ($oddMarket as $oddKey => $odd) {
                     if (in_array($odd['id'], $checkedOddsId)) continue;
-
-                    $addOddTime = Carbon::createFromTimestampUTC($odd['add_time']);
-                    $startEventTime = Carbon::createFromTimestampUTC($event['time']);
-                    if ($addOddTime >= $startEventTime) continue;
 
                     if ($oddKey > 0) {
                         $to = (float) ($odd['handicap'] ?? 0);
