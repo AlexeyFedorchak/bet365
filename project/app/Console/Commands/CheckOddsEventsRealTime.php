@@ -83,7 +83,8 @@ class CheckOddsEventsRealTime extends Command
 
                 foreach ($oddMarket as $oddKey => $odd) {
                     if (in_array($odd['id'], $checkedOddsId)) continue;
-
+                    if (is_null($odd['handicap'])) continue;
+                    
                     if ($oddKey > 0) {
                         $to = (float) ($odd['handicap'] ?? 0);
                         $from = (float) ($oddMarket[$oddKey - 1]['handicap'] ?? 0);
