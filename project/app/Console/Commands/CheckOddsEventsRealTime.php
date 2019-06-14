@@ -95,6 +95,7 @@ class CheckOddsEventsRealTime extends Command
         $now = Carbon::now();
         
         $checkedButNotSaved = collect();
+        $oddCounter = 0;
         foreach ($events as $event) {
             try {
                 $response = $client->request('GET', 'https://api.betsapi.com/v2/event/odds?token=' . $token . '&event_id=' . $event['id']);
@@ -152,13 +153,14 @@ class CheckOddsEventsRealTime extends Command
                          'event_id' => $event['id']
                     ]);
 
-                    $this->info('Odd with ID ' . $odd['id'] . ' is checked and saved!');
+                    $oddCounter++;
+                    $this->info('Odd with ID ' . $odd['id'] . ' is checked and saved!)');
                 }
             }
         }
 
 
-        \Log::info('FINISH');
+        \Log::info('FINISH (Checked: ' . $oddCounter . ')');
     }
 
     private function sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram)
