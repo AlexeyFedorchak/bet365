@@ -160,7 +160,7 @@ class CheckOddsEventsRealTime extends Command
         }
 
 
-        \Log::info('FINISH (Checked: ' . $oddCounter . ')');
+        \Log::info('FINISH (Checked: ' . $oddCounter . '/ ' . count($events) . ')');
     }
 
     private function sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram)
