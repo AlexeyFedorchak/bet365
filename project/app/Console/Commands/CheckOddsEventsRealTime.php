@@ -70,7 +70,7 @@ class CheckOddsEventsRealTime extends Command
         $checkedButNotSaved = collect();
         foreach ($events as $event) {
             try {
-                $response = $client->request('GET', 'https://api.betsapi.com/v2/event/odds?token=' . $token . '&event_id=' . $event['id'] . '&day=' . $now->format('Ymd'));
+                $response = $client->request('GET', 'https://api.betsapi.com/v2/event/odds?token=' . $token . '&event_id=' . $event['id']);
 
                 $odds = json_decode($response->getBody()->getContents(), true)['results']['odds'] ?? [];
             } catch(\Exception $e) {
