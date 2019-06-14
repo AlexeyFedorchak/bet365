@@ -54,9 +54,36 @@ class CheckOddsEventsRealTime extends Command
         $telegram = new Api(env('TELEGRAM_API_KEY'));
 
         try {
-            $response = $client->request('GET', 'https://api.betsapi.com/v2/events/upcoming?sport_id=' . $sportId . '&token=' . $token);
+            $response = $client->request('GET', 'https://api.betsapi.com/v2/events/upcoming?sport_id=' . $sportId . '&token=' . $token . '&day=' . Carbon::now()->format('Ymd'));
 
-            $events = json_decode($response->getBody()->getContents(), true)['results'];
+            $eventsNow = json_decode($response->getBody()->getContents(), true);
+            $eventsPagesNow = $eventsNow['results'];
+            $total = $eventsNow['pager']['total'];
+            $perPage = $eventsNow['pager']['per_page'];
+            $iterations = intval($total / $perPage) + 1;
+
+            for ($i = 2; $i <= $iterations; $i++) {
+                $response = $client->request('GET', 'https://api.betsapi.com/v2/events/upcoming?sport_id=' . $sportId . '&token=' . $token . '&day=' . Carbon::now()->format('Ymd') . '&page=' . $i);
+
+                $eventsCurrent = json_decode($response->getBody()->getContents(), true)['results'];
+                $eventsPagesNow = array_merge($eventsPagesNow, $eventsCurrent);
+            }
+
+            $response = $client->request('GET', 'https://api.betsapi.com/v2/events/upcoming?sport_id=' . $sportId . '&token=' . $token . '&day=' . Carbon::tomorrow()->format('Ymd'));
+
+            $eventsTomorrow = json_decode($response->getBody()->getContents(), true);
+            $eventsPages = $eventsTomorrow['results'];
+            $total = $eventsTomorrow['pager']['total'];
+            $perPage = $eventsTomorrow['pager']['per_page'];
+            $iterations = intval($total / $perPage) + 1;
+            for ($i = 2; $i <= $iterations; $i++) {
+                $response = $client->request('GET', 'https://api.betsapi.com/v2/events/upcoming?sport_id=' . $sportId . '&token=' . $token . '&day=' . Carbon::tomorrow()->format('Ymd') . '&page=' . $i);
+
+                $eventsCurrent = json_decode($response->getBody()->getContents(), true)['results'];
+                $eventsPages = array_merge($eventsPages, $eventsCurrent);
+            }
+
+            $events = array_merge($eventsPages, $eventsPagesNow);
         } catch (\Exception $e) {
             $events = [];
         }
@@ -73,6 +100,7 @@ class CheckOddsEventsRealTime extends Command
                 $response = $client->request('GET', 'https://api.betsapi.com/v2/event/odds?token=' . $token . '&event_id=' . $event['id']);
 
                 $odds = json_decode($response->getBody()->getContents(), true)['results']['odds'] ?? [];
+
             } catch(\Exception $e) {
                 $this->info($e->getMessage());
                 $odds = [];
@@ -158,7 +186,7 @@ class CheckOddsEventsRealTime extends Command
 
         $message = 
             '<i>' . $emoji . '</i>' . "\r\n"
-            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $handicapDiff . '</b> points. Range: from ' . $to . ' to ' . $from . '. ' . $event['home']['name'] . ' vs ' . $event['away']['name'] . ' - ' . Carbon::createFromTimestampUTC($event['time']) . ' (UTC). (<a href="' . $link . '">Link to the event</a>). Message sent - ' . Carbon::now();
+            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $handicapDiff . '</b> points. Range: from ' . $to . ' to ' . $from . '. ' . $event['home']['name'] . ' vs ' . $event['away']['name'] . ' - ' . Carbon::createFromTimestampUTC($event['time']) . ' (UTC). (<a href="' . $link . '">Link to the event</a>)';
 
         foreach ($telegramUsers as $telegramUser) {
             $telegram->sendMessage([
