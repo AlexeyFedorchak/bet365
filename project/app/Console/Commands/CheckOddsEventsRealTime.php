@@ -47,7 +47,6 @@ class CheckOddsEventsRealTime extends Command
      */
     public function handle()
     {
-        \Log::info('START');
         $client = new Client();
         $token = env('BETS_TOKEN');
         $sportId = env('SPORT_ID');
@@ -62,7 +61,7 @@ class CheckOddsEventsRealTime extends Command
             $perPage = $eventsNow['pager']['per_page'];
             $iterations = intval($total / $perPage) + 1;
 
-            for ($i = 2; $i <= $iterations; $i++) {
+            for ($i = 2; $i <= $iterations + 1; $i++) {
                 $response = $client->request('GET', 'https://api.betsapi.com/v2/events/upcoming?sport_id=' . $sportId . '&token=' . $token . '&day=' . Carbon::now()->format('Ymd') . '&page=' . $i);
 
                 $eventsCurrent = json_decode($response->getBody()->getContents(), true)['results'];
@@ -76,7 +75,7 @@ class CheckOddsEventsRealTime extends Command
             $total = $eventsTomorrow['pager']['total'];
             $perPage = $eventsTomorrow['pager']['per_page'];
             $iterations = intval($total / $perPage) + 1;
-            for ($i = 2; $i <= $iterations; $i++) {
+            for ($i = 2; $i <= $iterations + 1; $i++) {
                 $response = $client->request('GET', 'https://api.betsapi.com/v2/events/upcoming?sport_id=' . $sportId . '&token=' . $token . '&day=' . Carbon::tomorrow()->format('Ymd') . '&page=' . $i);
 
                 $eventsCurrent = json_decode($response->getBody()->getContents(), true)['results'];
@@ -114,6 +113,10 @@ class CheckOddsEventsRealTime extends Command
                     if (in_array($odd['id'], $checkedOddsId)) continue;
                     if (is_null($odd['handicap'])) continue;
 
+                    $addOddTime = Carbon::createFromTimestampUTC($odd['add_time']);
+                    $startEventTime = Carbon::createFromTimestampUTC($event['time']);
+                    if ($addOddTime->diffInHours($startEventTime) > 12) continue;
+                    
                     if ($oddKey > 0) {
                         $to = (float) ($odd['handicap'] ?? 0);
                         $from = (float) ($oddMarket[$oddKey - 1]['handicap'] ?? 0);
@@ -144,7 +147,9 @@ class CheckOddsEventsRealTime extends Command
                             ]);
 
                             $this->sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram);
-                        }                        
+                        }
+
+                        \Log::debug($event['id'] . ' - ' . $handicapDiff . ' (' . $odd['id'] . ')');
                     }
 
                     CheckedOdds::create([
@@ -158,9 +163,6 @@ class CheckOddsEventsRealTime extends Command
                 }
             }
         }
-
-
-        \Log::info('FINISH (Checked: ' . $oddCounter . '/' . count($events) . ')');
     }
 
     private function sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram)
