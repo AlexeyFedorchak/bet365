@@ -163,6 +163,8 @@ class CheckOddsEventsRealTime extends Command
                 }
             }
         }
+
+        \Log::debug('...');
     }
 
     private function sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram)
