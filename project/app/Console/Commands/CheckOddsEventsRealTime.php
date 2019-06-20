@@ -117,40 +117,40 @@ class CheckOddsEventsRealTime extends Command
                     $startEventTime = Carbon::createFromTimestampUTC($event['time']);
                     if ($addOddTime->diffInHours($startEventTime) > 12) continue;
                     
-                    if ($oddKey > 0) {
-                        $to = (float) ($odd['handicap'] ?? 0);
-                        $from = (float) ($oddMarket[$oddKey - 1]['handicap'] ?? 0);
+                    if (!isset($oddMarket[$oddKey + 1])) continue;
 
-                        $handicapDiff = abs($to - $from);
+                    $to = (float) ($odd['handicap'] ?? 0);
+                    $from = (float) ($oddMarket[$oddKey + 1]['handicap'] ?? 0);
 
-                        if ($handicapDiff >= 2) {
-                            $eventId = $event['id'];
-                            $checkedOddsFiltered = $checkedOdds
-                                ->filter(function ($item) use ($key, $eventId) {
-                                    return $item->odd_market == $key && $item->event_id == $eventId;
-                                });
+                    $handicapDiff = abs($to - $from);
 
-                            $oddNotSavedChecked = $checkedButNotSaved
-                                ->filter(function ($item) use ($key, $event) {
-                                    return $item['odd_market'] == $key && $item['event_id'] == $event['id'];
-                                });
+                    if ($handicapDiff >= 2) {
+                        $eventId = $event['id'];
+                        $checkedOddsFiltered = $checkedOdds
+                            ->filter(function ($item) use ($key, $eventId) {
+                                return $item->odd_market == $key && $item->event_id == $eventId;
+                            });
 
-                            $isRed = false;
-                            if (($oddNotSavedChecked->count() >= 1)
-                                || ($checkedOddsFiltered->count() >= 1)) {
-                                $isRed = true;
-                            }
+                        $oddNotSavedChecked = $checkedButNotSaved
+                            ->filter(function ($item) use ($key, $event) {
+                                return $item['odd_market'] == $key && $item['event_id'] == $event['id'];
+                            });
 
-                            $checkedButNotSaved->push([
-                                'odd_market' => $key,
-                                'event_id' => $event['id']
-                            ]);
-
-                            $this->sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram);
+                        $isRed = false;
+                        if (($oddNotSavedChecked->count() >= 1)
+                            || ($checkedOddsFiltered->count() >= 1)) {
+                            $isRed = true;
                         }
 
-                        \Log::debug($event['id'] . ' - ' . $handicapDiff . ' (' . $odd['id'] . ')');
+                        $checkedButNotSaved->push([
+                            'odd_market' => $key,
+                            'event_id' => $event['id']
+                        ]);
+
+                        $this->sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram);
                     }
+
+                    \Log::debug($event['id'] . ' - ' . $handicapDiff . ' (' . $odd['id'] . ')');
 
                     CheckedOdds::create([
                          'checked_odds_id' => $odd['id'],
@@ -192,7 +192,7 @@ class CheckOddsEventsRealTime extends Command
 
         $message = 
             '<i>' . $emoji . '</i>' . "\r\n"
-            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $handicapDiff . '</b> points. Range: from ' . $to . ' to ' . $from . '. ' . $event['home']['name'] . ' vs ' . $event['away']['name'] . ' - ' . Carbon::createFromTimestampUTC($event['time']) . ' (UTC). (<a href="' . $link . '">Link to the event</a>)';
+            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $handicapDiff . '</b> points. Range: from ' . $from . ' to ' . $to . '. ' . $event['home']['name'] . ' vs ' . $event['away']['name'] . ' - ' . Carbon::createFromTimestampUTC($event['time']) . ' (UTC). (<a href="' . $link . '">Link to the event</a>)';
 
         foreach ($telegramUsers as $telegramUser) {
             $telegram->sendMessage([
