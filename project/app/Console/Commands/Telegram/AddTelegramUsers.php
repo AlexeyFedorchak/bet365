@@ -46,14 +46,7 @@ class AddTelegramUsers extends Command
 
         foreach ($usersMessages as $key => $userMessage) {
 
-            if (in_array($key, $usersChatIds)) {
-                $telegram->sendMessage([
-                    'chat_id' => $key, 
-                    'text' => 'You\'ve been attached already. You don\'t need to do it again.',
-                ]);
-
-                continue;
-            }
+            if (in_array($key, $usersChatIds)) continue;
 
             if ($userMessage != $this->password) {
                 $telegram->sendMessage([
