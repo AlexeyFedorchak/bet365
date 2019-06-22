@@ -108,6 +108,10 @@ class CheckOddsEventsRealTime extends Command
 
             foreach ($odds as $key => $oddMarket) {
                 if (!in_array($key, $this->oddMarkets)) continue;
+                
+                if (count($oddMarket) > 0 && 
+                    is_null($oddMarket[count($oddMarket) - 1]['handicap'])) 
+                    array_pop($oddMarket);
 
                 foreach ($oddMarket as $oddKey => $odd) {
                     if (in_array($odd['id'], $checkedOddsId)) continue;
