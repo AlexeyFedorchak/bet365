@@ -35,10 +35,9 @@ class AddTelegramUsers extends Command
 
         $telegram = new Api(env('TELEGRAM_API_KEY'));
         $response = $telegram->getUpdates();
-        $usersChatIds = TelegramUser::all()->pluck('chat_id')->toArray();
+        $usersChatIds = TelegramUser::all()->pluck('chat_id')->toArray() ?? [];
         
-
-        $collected = collect($response)->pluck('message');
+        $collected = collect($response)->pluck('message') ?? [];
 
         $usersMessages = [];
         foreach ($collected as $message) {
@@ -46,6 +45,16 @@ class AddTelegramUsers extends Command
         }
 
         foreach ($usersMessages as $key => $userMessage) {
+
+            if (in_array($key, $usersChatIds)) {
+                $telegram->sendMessage([
+                    'chat_id' => $key, 
+                    'text' => 'You\'ve been attached already. You don\'t need to do it again.',
+                ]);
+
+                continue;
+            }
+
             if ($userMessage != $this->password) {
                 $telegram->sendMessage([
                     'chat_id' => $key, 
