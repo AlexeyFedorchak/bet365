@@ -22,6 +22,8 @@ class AddTelegramUsers extends Command
      */
     protected $description = 'Add telegram users';
 
+    protected $password = 'Bet for future!';
+
     /**
      * Execute the console command.
      *
@@ -29,22 +31,45 @@ class AddTelegramUsers extends Command
      */
     public function handle()
     {
+        \Log::info('###');
+
         $telegram = new Api(env('TELEGRAM_API_KEY'));
         $response = $telegram->getUpdates();
+        $usersChatIds = TelegramUser::all()->pluck('chat_id')->toArray();
         
-        foreach ($response as $item) {
-            if (isset($item['message']['chat']['id'])) {
-                $chatId = $item['message']['chat']['id'];
-                TelegramUser::updateOrCreate(
-                    [
-                        'chat_id' => $chatId,
-                    ], 
-                    [
-                        'chat_id' => $chatId,
-                    ]);                
 
-                $this->info('Added/updated user (ID: ' . $chatId . ').');
+        $collected = collect($response)->pluck('message');
+
+        $usersMessages = [];
+        foreach ($collected as $message) {
+            $usersMessages[$message['chat']['id']] = $message['text'];
+        }
+
+        foreach ($usersMessages as $key => $userMessage) {
+            if ($userMessage != $this->password) {
+                $telegram->sendMessage([
+                    'chat_id' => $key, 
+                    'text' => 'The key is not correct. You are not attached.',
+                ]);
+
+                continue;
             }
+
+            TelegramUser::updateOrCreate(
+                [
+                    'chat_id' => $key,
+                ], 
+                [
+                    'chat_id' => $key,
+                ]);
+
+                $telegram->sendMessage([
+                    'chat_id' => $key, 
+                    'text' => 'Welcome! You\'ve been attached! The message notfications are comming..' ,
+                ]);
+
+            $this->info('Added/updated user (ID: ' . $key . ').');
+            \Log::info('New user: ' . $key);
         }
     }
 }

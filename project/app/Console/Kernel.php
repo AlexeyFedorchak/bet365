@@ -42,6 +42,9 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('check:odds:events:realtime')
                  ->everyMinute();
+
+        $schedule->command('telegram:update')
+                 ->everyThirtyMinutes();
     }
 
     /**
