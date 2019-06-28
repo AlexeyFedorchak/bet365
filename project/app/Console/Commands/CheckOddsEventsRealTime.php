@@ -151,7 +151,9 @@ class CheckOddsEventsRealTime extends Command
                             'event_id' => $event['id']
                         ]);
 
-                        $this->sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram);
+                        try {
+                            $this->sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram);
+                        } catch (\Exception $e) {}
                     }
 
                     \Log::debug($event['id'] . ' - ' . $handicapDiff . ' (' . $odd['id'] . ')');
