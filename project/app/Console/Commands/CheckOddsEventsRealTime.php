@@ -198,7 +198,7 @@ class CheckOddsEventsRealTime extends Command
 
         $message = 
             '<i>' . $emoji . '</i>' . "\r\n"
-            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $handicapDiff . '</b> points. Range: from ' . $from . ' to ' . $to . '. ' . $event['home']['name'] . ' vs ' . $event['away']['name'] . ' - ' . Carbon::createFromTimestampUTC($event['time']) . ' (UTC). (<a href="' . $link . '">Link to the event</a>)';
+            . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $handicapDiff . '</b> points. Range: from ' . $from . ' to ' . $to . '. ' . $event['home']['name'] . ' vs ' . $event['away']['name'] . ' - ' . Carbon::createFromTimestampUTC($event['time']) . ' (UTC). League: ' . $event['league']['name'] . '. (<a href="' . $link . '">Link to the event</a>)';
 
         foreach ($telegramUsers as $telegramUser) {
             $telegram->sendMessage([
