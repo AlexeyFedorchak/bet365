@@ -151,9 +151,8 @@ class CheckOddsEventsRealTime extends Command
                             'event_id' => $event['id']
                         ]);
 
-                        try {
-                            $this->sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram);
-                        } catch (\Exception $e) {}
+                        
+                        $this->sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram);
                     }
 
                     \Log::debug($event['id'] . ' - ' . $handicapDiff . ' (' . $odd['id'] . ')');
@@ -201,13 +200,18 @@ class CheckOddsEventsRealTime extends Command
             . '<i>It seems, there is something worthy to check...</i>' . "\r\n" . '<b>' . $marketOdd . '</b> has been changed in <b>' . $handicapDiff . '</b> points. Range: from ' . $from . ' to ' . $to . '. ' . $event['home']['name'] . ' vs ' . $event['away']['name'] . ' - ' . Carbon::createFromTimestampUTC($event['time']) . ' (UTC). League: ' . $event['league']['name'] . '. (<a href="' . $link . '">Link to the event</a>)';
 
         foreach ($telegramUsers as $telegramUser) {
-            $telegram->sendMessage([
-                'chat_id' => $telegramUser->chat_id, 
-                'text' => $message,
-                'parse_mode' => 'HTML',
-            ]);
+            try {
+                $telegram->sendMessage([
+                    'chat_id' => $telegramUser->chat_id, 
+                    'text' => $message,
+                    'parse_mode' => 'HTML',
+                ]);
 
-            $this->info('The notification message was sent to user with ID ' . $telegramUser->chat_id);
+                $this->info('The notification message was sent to user with ID ' . $telegramUser->chat_id);
+
+            } catch (\Exception $e) {
+                $this->info('BROKEN MESSAGE: ' . $telegramUser->chat_id);
+            }
         }
 
         \Log::info('Message sent - ' . Carbon::now());
