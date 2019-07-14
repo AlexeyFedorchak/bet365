@@ -30,6 +30,11 @@ class Kernel extends ConsoleKernel
         Commands\TestTelegram::class,
         Commands\CheckOddsOptimized::class,
         Commands\CheckOddsEventsRealTime::class,
+        Commands\Live\CheckOddsEventsLive::class,
+        Commands\Live\AddTelegramLive::class,
+        Commands\Live\TelegramTestLive::class,
+        Commands\Live\ClearLiveUsers::class,
+        Commands\Live\TruncateLive::class,
     ];
 
     /**
@@ -40,10 +45,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('check:odds:events:realtime')
+        $schedule->command('check:odds:live')
                  ->everyMinute();
 
-        $schedule->command('telegram:update')
+        $schedule->command('telegram:update:live')
                  ->everyThirtyMinutes();
     }
 
