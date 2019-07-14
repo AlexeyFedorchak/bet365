@@ -157,8 +157,8 @@ class CheckOddsEventsLive extends Command
         $message = 
             '<i>' . $emoji . '</i>' . "\r\n"
             . '<i>It seems, there is something worthy to check...</i>' . "\r\n" 
-            . 'The difference between scores and handicap: ' 
-            . ($handicapDiff - $scoreDiff). '<b>(' . $marketOdd . ')</b>'. "\r\n" 
+            . 'The difference between scores and handicap for <b>' . $marketOdd . '</b>: ' 
+            . ($handicapDiff - $scoreDiff). "\r\n" 
             . $event['home']['name'] . ' vs ' . $event['away']['name'] . ' - ' 
             . Carbon::createFromTimestampUTC($event['time']) . ' (UTC). ' . "\r\n" 
             . 'League: ' . $event['league']['name'] . '. (<a href="' . $link . '">Link to the event</a>)';
