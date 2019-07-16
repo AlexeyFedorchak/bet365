@@ -52,15 +52,17 @@ class CheckOddsEventsLive extends Command
         $telegram = new Api(env('TELEGRAM_API_KEY_LIVE'));
         $telegramUsers = TelegramUsersLive::all();
 
-        $response = $client->request('GET', 'https://api.betsapi.com/v2/events/inplay?sport_id=' . $sportId . '&token=' . $token . '&day=' . Carbon::now()->format('Ymd'));
+        try {
+            $response = $client->request('GET', 'https://api.betsapi.com/v2/events/inplay?sport_id=' . $sportId . '&token=' . $token . '&day=' . Carbon::now()->format('Ymd'));
 
-        $events = json_decode($response->getBody()->getContents(), true)['results'];
+            $events = json_decode($response->getBody()->getContents(), true)['results'];            
+        } catch (\Exception $e) {
+            $events = [];
+        }
 
         $liveScores = LiveScores::all();
         $checkedOddsIds = CheckedOddsLive::all()->pluck('odd_id')->toArray();
-        $notifiedLiveEvents = NotifiedLiveEvents::all()->pluck('event_id')->toArray();
 
-        count($events);
         foreach ($events as $event) {
             LiveScores::create([
                 'event_id' => $event['id'],
@@ -73,9 +75,14 @@ class CheckOddsEventsLive extends Command
             $currentLiveScore->created_at = Carbon::now();
             $liveScores->push($currentLiveScore);
 
-            $response = $client->request('GET', 'https://api.betsapi.com/v2/event/odds?token=' . $token . '&event_id=' . $event['id']);
+            try {
+                $response = $client->request('GET', 'https://api.betsapi.com/v2/event/odds?token=' . $token . '&event_id=' . $event['id']);
 
-            $oddsOfMarkets = json_decode($response->getBody()->getContents(), true)['results']['odds'] ?? [];
+                $oddsOfMarkets = json_decode($response->getBody()->getContents(), true)['results']['odds'] ?? [];
+            } catch(\Exception $e) {
+                $oddsOfMarkets = [];
+            }
+
             foreach ($oddsOfMarkets as $market => $oddsOfMarket) {
                 if (!in_array($market, $this->oddMarkets)) continue;
 
@@ -88,6 +95,8 @@ class CheckOddsEventsLive extends Command
                     $to = (float) $odd['handicap'];
                     $from = (float) $oddsOfMarket[$key + 1]['handicap'];
                     $handicapDiff = abs($to - $from);
+
+                    if ($handicapDiff < 2) continue;
 
                     $eventScores = $liveScores->where('event_id', $event['id']);
                             
@@ -117,13 +126,26 @@ class CheckOddsEventsLive extends Command
                     if (abs($handicapDiff - $scoreDiff) < 2) continue;
                     \Log::debug('Diff: ' . ($handicapDiff - $scoreDiff));
 
+                    $isNotified = NotifiedLiveEvents::where('event_id', $event['id'])
+                        ->where('market_odd', $market)
+                        ->exists();
+                        
                     $isRed = false;
-                    if (in_array($event['id'], $notifiedLiveEvents)) $isRed = true;
+                    if ($isNotified) $isRed = true;
 
-                    $this->sendMessage($isRed, $event, $market, $handicapDiff, $from, $to, $telegramUsers, $telegram, $scoreDiff);
+                    $this->sendMessage($isRed, $event, $market, $handicapDiff, $from, $to, $telegramUsers, $telegram, $scoreDiff, $currentScoresStamp, $prevScoresStamp);
 
-                    CheckedOddsLive::create(['odd_id' => $odd['id']]);
-                    NotifiedLiveEvents::create(['event_id' => $event['id']]);
+                    CheckedOddsLive::create(
+                        [
+                            'odd_id' => $odd['id'],
+                            'market_odd' => $market,
+                        ]);
+
+                    NotifiedLiveEvents::create(
+                        [
+                            'event_id' => $event['id'],
+                            'market_odd' => $market,
+                        ]);
                 }
             }
         }
@@ -131,7 +153,7 @@ class CheckOddsEventsLive extends Command
         \Log::debug('...');
     }
 
-    private function sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram, $scoreDiff)
+    private function sendMessage($isRed, $event, $key, $handicapDiff, $from, $to, $telegramUsers, $telegram, $scoreDiff, $currentScoresStamp, $prevScoresStamp)
     {
         if ($isRed) {
             $EmojiUtf8Byte = '\xF0\x9F\x94\xB4';
@@ -157,11 +179,14 @@ class CheckOddsEventsLive extends Command
         $message = 
             '<i>' . $emoji . '</i>' . "\r\n"
             . '<i>It seems, there is something worthy to check...</i>' . "\r\n" 
-            . 'The difference between scores and handicap for <b>' . $marketOdd . '</b>: ' 
-            . abs($handicapDiff - $scoreDiff). "\r\n" 
+            . 'The difference between scores and handicap for <b>' . $marketOdd . ': '
+            . abs($handicapDiff - $scoreDiff) . '</b>' . '. '
+            . 'Scores: (' . ($currentScoresStamp[0] ?? 0) . '-' . ($currentScoresStamp[1] ?? 0) . ')'
+            . ' => ' . '(' . ($prevScoresStamp[0] ?? 0) . '-' . ($prevScoresStamp[1] ?? 0) . '). '
+            . 'Handicap range: ' . $from . '-' . $to . '. '
             . $event['home']['name'] . ' vs ' . $event['away']['name'] . ' - ' 
-            . Carbon::createFromTimestampUTC($event['time']) . ' (UTC). ' . "\r\n" 
-            . 'League: ' . $event['league']['name'] . '. (<a href="' . $link . '">Link to the event</a>)';
+            . Carbon::createFromTimestampUTC($event['time']) . ' (UTC). '
+            . 'League: ' . $event['league']['name'] . '. (<a href="' . $link . '">Link to the event</a>).';
 
         foreach ($telegramUsers as $telegramUser) {
             try {

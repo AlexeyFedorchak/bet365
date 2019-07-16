@@ -10,5 +10,6 @@ class CheckedOddsLive extends Model
 
     protected $fillable = [
     	'odd_id',
+    	'market_odd',
     ];
 }
