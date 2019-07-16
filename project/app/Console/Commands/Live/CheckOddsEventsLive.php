@@ -123,13 +123,14 @@ class CheckOddsEventsLive extends Command
                             - abs($prevScoresStamp[0] - $prevScoresStamp[1]));
                     }
 
+                    if ($scoreDiff < 2) continue;
                     if (abs($handicapDiff - $scoreDiff) < 2) continue;
                     \Log::debug('Diff: ' . ($handicapDiff - $scoreDiff));
 
                     $isNotified = NotifiedLiveEvents::where('event_id', $event['id'])
                         ->where('market_odd', $market)
                         ->exists();
-                        
+
                     $isRed = false;
                     if ($isNotified) $isRed = true;
 
