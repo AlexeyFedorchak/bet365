@@ -47,7 +47,7 @@ class CheckOddsEventsLive extends Command
     public function handle()
     {
         \Log::debug('@@@');
-        
+
         $client = new Client();
         $token = env('BETS_TOKEN');
         $sportId = env('SPORT_ID');
@@ -66,17 +66,6 @@ class CheckOddsEventsLive extends Command
         $checkedOddsIds = CheckedOddsLive::all()->pluck('odd_id')->toArray();
 
         foreach ($events as $event) {
-            LiveScores::create([
-                'event_id' => $event['id'],
-                'scores' => $event['ss'],
-            ]);
-
-            $currentLiveScore = new LiveScores();
-            $currentLiveScore->event_id = $event['id']; 
-            $currentLiveScore->scores = $event['ss'];
-            $currentLiveScore->created_at = Carbon::now();
-            $liveScores->push($currentLiveScore);
-
             try {
                 $response = $client->request('GET', 'https://api.betsapi.com/v2/event/odds?token=' . $token . '&event_id=' . $event['id']);
 

@@ -35,6 +35,8 @@ class Kernel extends ConsoleKernel
         Commands\Live\TelegramTestLive::class,
         Commands\Live\ClearLiveUsers::class,
         Commands\Live\TruncateLive::class,
+        Commands\Live\CheckScores::class,
+        Commands\Live\TruncateLiveScores::class,
     ];
 
     /**
@@ -50,6 +52,9 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('telegram:update:live')
                  ->everyThirtyMinutes();
+
+        $schedule->command('truncate:scores:live')
+                 ->daily();
     }
 
     /**
