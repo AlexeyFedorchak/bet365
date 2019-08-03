@@ -46,6 +46,8 @@ class CheckOddsEventsLive extends Command
      */
     public function handle()
     {
+        \Log::debug('@@@');
+        
         $client = new Client();
         $token = env('BETS_TOKEN');
         $sportId = env('SPORT_ID');
