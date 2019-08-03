@@ -184,7 +184,7 @@ class CheckOddsEventsLive extends Command
             . abs($handicapDiff - $scoreDiff) . '</b>' . '. '
             . 'Scores: (' . ($currentScoresStamp[0] ?? 0) . '-' . ($currentScoresStamp[1] ?? 0) . ')'
             . ' => ' . '(' . ($prevScoresStamp[0] ?? 0) . '-' . ($prevScoresStamp[1] ?? 0) . '). '
-            . 'Handicap range: ' . $from . '-' . $to . '. '
+            . 'Handicap range: (' . $from . ') => (' . $to . '). '
             . $event['home']['name'] . ' vs ' . $event['away']['name'] . ' - ' 
             . Carbon::createFromTimestampUTC($event['time']) . ' (UTC). '
             . 'League: ' . $event['league']['name'] . '. (<a href="' . $link . '">Link to the event</a>).';
