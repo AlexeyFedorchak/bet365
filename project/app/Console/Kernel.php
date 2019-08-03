@@ -54,7 +54,7 @@ class Kernel extends ConsoleKernel
                  ->everyThirtyMinutes();
 
         $schedule->command('truncate:scores:live')
-                 ->daily();
+                 ->everyThirtyMinutes();
     }
 
     /**
