@@ -57,6 +57,10 @@ class CheckOddsOptimizedLive extends Command
 
             $events = json_decode($response->getBody()->getContents(), true)['results'];            
         } catch (\Exception $e) {
+            	try {
+            		\Log::debug('Response error: events!' . $e->getMessage());	
+            	} catch(\Exception $e) {}
+
             $events = [];
         }
 
@@ -75,6 +79,10 @@ class CheckOddsOptimizedLive extends Command
                 $odds = json_decode($response->getBody()->getContents(), true)['results']['odds'] ?? [];
 
             } catch(\Exception $e) {
+            	try {
+            		\Log::debug('Response error: odds!' . $e->getMessage());	
+            	} catch(\Exception $e) {}
+            	
                 $odds = [];
             }
 
