@@ -150,7 +150,7 @@ class CheckOddsOptimizedLive extends Command
 	                            - abs($prevScoresStamp[0] - $prevScoresStamp[1]));
 	                    }
 
-	                    if ($scoreDiff < 2 || ($handicapDiff - $scoreDiff) < 2)
+	                    if (($handicapDiff - $scoreDiff) < 2)
 	                    	continue;
                         
                         $this->sendMessage(
@@ -224,8 +224,8 @@ class CheckOddsOptimizedLive extends Command
             . '<i>It seems, there is something worthy to check...</i>' . "\r\n" 
             . 'The difference between scores and handicap for <b>' . $marketOdd . ': '
             . abs($handicapDiff - $scoreDiff) . '</b>' . '. '
-            . 'Scores: (' . ($currentScoresStamp[0] ?? 0) . '-' . ($currentScoresStamp[1] ?? 0) . ')'
-            . ' => ' . '(' . ($prevScoresStamp[0] ?? 0) . '-' . ($prevScoresStamp[1] ?? 0) . '). '
+            . 'Scores: (' . ($prevScoresStamp[0] ?? 0) . '-' . ($prevScoresStamp[1] ?? 0) . ')'
+            . ' => ' . '(' . ($currentScoresStamp[0] ?? 0) . '-' . ($currentScoresStamp[1] ?? 0) . '). '
             . 'Handicap range: (' . $from . ') => (' . $to . '). '
             . $event['home']['name'] . ' vs ' . $event['away']['name'] . ' - ' 
             . Carbon::createFromTimestampUTC($event['time']) . ' (UTC). '
