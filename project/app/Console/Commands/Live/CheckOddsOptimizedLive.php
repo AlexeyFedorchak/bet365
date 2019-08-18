@@ -142,7 +142,7 @@ class CheckOddsOptimizedLive extends Command
 							continue;
 
 	                    $marketOdd = MarketsOddConverter::convert($oddKey);
-	                    if (strpos($marketOdd, 'Total Points')) {
+	                    if (strpos($marketOdd, 'Total')) {
 	                        $scoreDiff = abs(($currentScoresStamp[0] + $currentScoresStamp[1])
 	                            - ($prevScoresStamp[0] + $prevScoresStamp[1]));
 	                    } else {
