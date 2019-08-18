@@ -108,7 +108,7 @@ class CheckOddsOptimizedLive extends Command
 
                     $handicapDiff = abs($to - $from);
 
-                    if ($handicapDiff >= 2) {
+                    if ($handicapDiff >= 0) {
                         $eventId = $event['id'];
                         $checkedOddsFiltered = $checkedOdds
                             ->filter(function ($item) use ($key, $eventId) {
@@ -150,7 +150,8 @@ class CheckOddsOptimizedLive extends Command
 	                            - abs($prevScoresStamp[0] - $prevScoresStamp[1]));
 	                    }
 
-	                    if ($scoreDiff < 2 || ($handicapDiff - $scoreDiff) < 2)
+	                    //$scoreDiff < 2 || 
+	                    if (($handicapDiff - $scoreDiff) < 2)
 	                    	continue;
                         
                         $this->sendMessage(
