@@ -56,7 +56,7 @@ class Kernel extends ConsoleKernel
                  ->everyThirtyMinutes();
 
         $schedule->command('clear:odds:live')
-                 ->dailyAt('13:00');
+                 ->hourly();
     }
 
     /**

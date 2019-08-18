@@ -31,7 +31,7 @@ class ClearCheckedOddsLive extends Command
     {
         \Log::debug('Cleaner is running!');
 
-        $checkedClearOddsQuery = CheckedOdds::where('created_at', '<', Carbon::yesterday());
+        $checkedClearOddsQuery = CheckedOdds::where('created_at', '<', Carbon::now()->subHours(3));
 
         \Log::debug('Clearing - ' . $checkedClearOddsQuery->count() . ' odds!');
 
