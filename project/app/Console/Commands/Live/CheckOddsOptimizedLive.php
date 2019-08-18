@@ -150,7 +150,7 @@ class CheckOddsOptimizedLive extends Command
 	                            - abs($prevScoresStamp[0] - $prevScoresStamp[1]));
 	                    }
 
-	                    if (($handicapDiff - $scoreDiff) < 2)
+	                    if ($scoreDiff < 2 || ($handicapDiff - $scoreDiff) < 2)
 	                    	continue;
                         
                         $this->sendMessage(
