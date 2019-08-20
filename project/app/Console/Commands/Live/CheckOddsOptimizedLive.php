@@ -85,7 +85,7 @@ class CheckOddsOptimizedLive extends Command
             	
                 $odds = [];
             }
-
+            
             foreach ($odds as $key => $oddMarket) {
                 if (!in_array($key, $this->oddMarkets)) continue;
                 
@@ -106,9 +106,9 @@ class CheckOddsOptimizedLive extends Command
                     $to = (float) ($odd['handicap'] ?? 0);
                     $from = (float) ($oddMarket[$oddKey + 1]['handicap'] ?? 0);
 
-                    $handicapDiff = abs($to - $from);
+                    $handicapDiff = $to - $from;
 
-                    if ($handicapDiff >= 0) {
+                    if (!is_null($handicapDiff)) {
                         $eventId = $event['id'];
                         $checkedOddsFiltered = $checkedOdds
                             ->filter(function ($item) use ($key, $eventId) {
@@ -141,17 +141,17 @@ class CheckOddsOptimizedLive extends Command
 						if (count($prevScoresStamp) < 2)
 							continue;
 
-	                    $marketOdd = MarketsOddConverter::convert($oddKey);
-	                    if (strpos($marketOdd, 'Total')) {
-	                        $scoreDiff = abs(($currentScoresStamp[0] + $currentScoresStamp[1])
-	                            - ($prevScoresStamp[0] + $prevScoresStamp[1]));
+	                    $marketOdd = MarketsOddConverter::convert($key);
+	                    if (strpos($marketOdd, 'Total') !== FALSE) {
+	                        $scoreDiff = ($currentScoresStamp[0] + $currentScoresStamp[1])
+	                            - ($prevScoresStamp[0] + $prevScoresStamp[1]);
 	                    } else {
-	                        $scoreDiff = abs(abs($currentScoresStamp[0] - $currentScoresStamp[1])
-	                            - abs($prevScoresStamp[0] - $prevScoresStamp[1]));
+	                        $scoreDiff = ($currentScoresStamp[0] - $currentScoresStamp[1])
+	                            - ($prevScoresStamp[0] - $prevScoresStamp[1]);
 	                    }
 
 	                    //$scoreDiff < 2 || 
-	                    if (($handicapDiff - $scoreDiff) < 2)
+	                    if (abs($handicapDiff - $scoreDiff) < 2)
 	                    	continue;
                         
                         $this->sendMessage(
