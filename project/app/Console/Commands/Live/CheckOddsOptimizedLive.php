@@ -55,7 +55,7 @@ class CheckOddsOptimizedLive extends Command
         try {
             $response = $client->request('GET', 'https://api.betsapi.com/v2/events/inplay?sport_id=' . $sportId . '&token=' . $token . '&day=' . Carbon::now()->format('Ymd'));
 
-            $events = json_decode($response->getBody()->getContents(), true)['results'];            
+            $events = json_decode($response->getBody()->getContents(), true)['results'];
         } catch (\Exception $e) {
             	try {
             		\Log::debug('Response error: events!' . $e->getMessage());	
@@ -145,13 +145,18 @@ class CheckOddsOptimizedLive extends Command
 	                    if (strpos($marketOdd, 'Total') !== FALSE) {
 	                        $scoreDiff = ($currentScoresStamp[0] + $currentScoresStamp[1])
 	                            - ($prevScoresStamp[0] + $prevScoresStamp[1]);
+
+                            //$scoreDiff < 2 ||
+                            $totalDiff = abs($handicapDiff - $scoreDiff);
 	                    } else {
 	                        $scoreDiff = ($currentScoresStamp[0] - $currentScoresStamp[1])
 	                            - ($prevScoresStamp[0] - $prevScoresStamp[1]);
+
+                            //$scoreDiff < 2 ||
+                            $totalDiff = abs($handicapDiff + $scoreDiff);
 	                    }
 
-	                    //$scoreDiff < 2 || 
-	                    if (abs($handicapDiff - $scoreDiff) < 2)
+	                    if ($totalDiff < 2)
 	                    	continue;
                         
                         $this->sendMessage(
