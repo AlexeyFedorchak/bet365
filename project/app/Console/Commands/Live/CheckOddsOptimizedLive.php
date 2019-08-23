@@ -32,10 +32,10 @@ class CheckOddsOptimizedLive extends Command
     protected $oddMarkets = [
         '18_2',
         '18_3',
-        '18_5',
-        '18_6',
-        '18_8',
-        '18_9',
+        // '18_5',
+        // '18_6',
+        // '18_8',
+        // '18_9',
     ];
 
     protected $baseLink = 'https://betsapi.com/rs/bet365/';
@@ -170,7 +170,8 @@ class CheckOddsOptimizedLive extends Command
                         	$telegram,
 					    	$scoreDiff, 
 					    	$currentScoresStamp, 
-					    	$prevScoresStamp
+					    	$prevScoresStamp,
+                            $totalDiff
                         );
                     }
 
@@ -202,7 +203,8 @@ class CheckOddsOptimizedLive extends Command
     	$telegram,
     	$scoreDiff, 
     	$currentScoresStamp, 
-    	$prevScoresStamp
+    	$prevScoresStamp,
+        $totalDiff
     ) {
         if ($isRed) {
             $EmojiUtf8Byte = '\xF0\x9F\x94\xB4';
@@ -229,7 +231,7 @@ class CheckOddsOptimizedLive extends Command
             '<i>' . $emoji . '</i>' . "\r\n"
             . '<i>It seems, there is something worthy to check...</i>' . "\r\n" 
             . 'The difference between scores and handicap for <b>' . $marketOdd . ': '
-            . abs($handicapDiff - $scoreDiff) . '</b>' . '. '
+            . $totalDiff . '</b>' . '. '
             . 'Scores: (' . ($prevScoresStamp[0] ?? 0) . '-' . ($prevScoresStamp[1] ?? 0) . ')'
             . ' => ' . '(' . ($currentScoresStamp[0] ?? 0) . '-' . ($currentScoresStamp[1] ?? 0) . '). '
             . 'Handicap range: (' . $from . ') => (' . $to . '). '
